@@ -1,0 +1,6 @@
+{
+  "name": "MBG STOCK",
+  "description": "Application professionnelle de gestion de stock et de ventes pour boissons et marchandises (MBG STOCK) avec suivi en temps réel, alertes de seuil minimum, gestion multi-profils et synchronisation économe en données.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

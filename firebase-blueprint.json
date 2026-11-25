@@ -1,0 +1,135 @@
+{
+  "entities": {
+    "Store": {
+      "title": "Store",
+      "description": "Magasin / dépôt MBG STOCK géré par un propriétaire et son équipe.",
+      "type": "object",
+      "properties": {
+        "ownerUid": { "type": "string", "description": "Firebase UID du propriétaire créateur." },
+        "memberUids": { "type": "array", "description": "Liste bornée des UID Google autorisés dans la boutique." },
+        "invitedEmails": { "type": "array", "description": "Emails Google invités par le propriétaire." },
+        "storeName": { "type": "string", "description": "Nom commercial de l'établissement." },
+        "currency": { "type": "string", "description": "Devise utilisée (FCFA)." },
+        "defaultUnitsPerCrate": { "type": "integer", "description": "Nombre d'unités par casier par défaut." },
+        "defaultMinThreshold": { "type": "integer", "description": "Seuil minimum d'alerte par défaut." },
+        "dataSaverEnabled": { "type": "boolean", "description": "Mode économie de données actif." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." }
+      },
+      "required": ["ownerUid", "memberUids", "invitedEmails", "storeName", "currency", "defaultUnitsPerCrate", "defaultMinThreshold", "dataSaverEnabled", "createdAt", "updatedAt"]
+    },
+    "StaffAccount": {
+      "title": "StaffAccount",
+      "description": "Compte opérateur interne (Propriétaire, Gestionnaire de stock, Gérant/Employé) avec mot de passe haché SHA-256.",
+      "type": "object",
+      "properties": {
+        "storeId": { "type": "string", "description": "ID du magasin parent." },
+        "ownerUid": { "type": "string", "description": "Firebase UID du propriétaire." },
+        "memberUids": { "type": "array", "description": "UID autorisés dénormalisés." },
+        "username": { "type": "string", "description": "Identifiant de connexion unique dans le magasin." },
+        "displayName": { "type": "string", "description": "Nom complet affiché." },
+        "role": { "type": "string", "enum": ["PROPRIETAIRE", "GESTIONNAIRE", "GERANT"], "description": "Profil d'accès." },
+        "passwordSalt": { "type": "string", "description": "Sel aléatoire hexadécimal." },
+        "passwordHash": { "type": "string", "description": "Empreinte SHA-256 salée du mot de passe." },
+        "active": { "type": "boolean", "description": "Statut actif du compte." },
+        "linkedEmail": { "type": "string", "description": "Email Google optionnel pour synchronisation multi-appareils." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." }
+      },
+      "required": ["storeId", "ownerUid", "memberUids", "username", "displayName", "role", "passwordSalt", "passwordHash", "active", "createdAt", "updatedAt"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Produit en stock (Boissons, Jus, Eau, Autres marchandises).",
+      "type": "object",
+      "properties": {
+        "storeId": { "type": "string", "description": "ID du magasin parent." },
+        "ownerUid": { "type": "string", "description": "Firebase UID du propriétaire." },
+        "memberUids": { "type": "array", "description": "UID autorisés dénormalisés." },
+        "name": { "type": "string", "description": "Nom du produit (ex: Régab, Castel, Beaufort)." },
+        "category": { "type": "string", "enum": ["BOISSONS", "JUS", "EAU", "AUTRES"], "description": "Catégorie du produit." },
+        "purchasePrice": { "type": "integer", "description": "Prix d'achat unitaire en FCFA." },
+        "sellingPrice": { "type": "integer", "description": "Prix de vente unitaire en FCFA." },
+        "quantity": { "type": "integer", "description": "Quantité disponible en bouteilles/unités." },
+        "minThreshold": { "type": "integer", "description": "Seuil minimum d'alerte." },
+        "unitsPerCrate": { "type": "integer", "description": "Nombre d'unités par casier." },
+        "createdByName": { "type": "string", "description": "Nom de l'utilisateur ayant créé le produit." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." }
+      },
+      "required": ["storeId", "ownerUid", "memberUids", "name", "category", "purchasePrice", "sellingPrice", "quantity", "minThreshold", "unitsPerCrate", "createdByName", "createdAt", "updatedAt"]
+    },
+    "StockMovement": {
+      "title": "StockMovement",
+      "description": "Journal immuable des entrées, sorties/ventes et ajustements de stock.",
+      "type": "object",
+      "properties": {
+        "storeId": { "type": "string", "description": "ID du magasin parent." },
+        "ownerUid": { "type": "string", "description": "Firebase UID du propriétaire." },
+        "memberUids": { "type": "array", "description": "UID autorisés dénormalisés." },
+        "type": { "type": "string", "enum": ["ENTREE", "SORTIE", "AJUSTEMENT"], "description": "Type d'opération." },
+        "productId": { "type": "string", "description": "ID du produit concerné." },
+        "productName": { "type": "string", "description": "Nom du produit au moment de l'opération." },
+        "cratesCount": { "type": "integer", "description": "Nombre de casiers (pour entrées)." },
+        "extraBottles": { "type": "integer", "description": "Bouteilles supplémentaires." },
+        "unitsPerCrate": { "type": "integer", "description": "Unités par casier appliquées." },
+        "quantity": { "type": "integer", "description": "Quantité totale concernée (> 0)." },
+        "stockBefore": { "type": "integer", "description": "Stock avant opération." },
+        "stockAfter": { "type": "integer", "description": "Stock après opération." },
+        "unitPrice": { "type": "integer", "description": "Prix unitaire appliqué en FCFA." },
+        "totalAmount": { "type": "integer", "description": "Montant total en FCFA." },
+        "operatorId": { "type": "string", "description": "ID du compte opérateur." },
+        "operatorName": { "type": "string", "description": "Nom de l'opérateur." },
+        "operatorRole": { "type": "string", "enum": ["PROPRIETAIRE", "GESTIONNAIRE", "GERANT"], "description": "Profil de l'opérateur." },
+        "referenceId": { "type": "string", "description": "Référence vente ou bon de réception." },
+        "operationDateMs": { "type": "integer", "description": "Date de l'opération en millisecondes." },
+        "note": { "type": "string", "description": "Note optionnelle." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." }
+      },
+      "required": ["storeId", "ownerUid", "memberUids", "type", "productId", "productName", "cratesCount", "extraBottles", "unitsPerCrate", "quantity", "stockBefore", "stockAfter", "unitPrice", "totalAmount", "operatorId", "operatorName", "operatorRole", "referenceId", "operationDateMs", "createdAt"]
+    },
+    "SaleRecord": {
+      "title": "SaleRecord",
+      "description": "Vente multi-produits enregistrée de manière atomique et idempotente.",
+      "type": "object",
+      "properties": {
+        "storeId": { "type": "string", "description": "ID du magasin parent." },
+        "ownerUid": { "type": "string", "description": "Firebase UID du propriétaire." },
+        "memberUids": { "type": "array", "description": "UID autorisés dénormalisés." },
+        "operatorId": { "type": "string", "description": "ID de l'opérateur." },
+        "operatorName": { "type": "string", "description": "Nom de l'opérateur." },
+        "operatorRole": { "type": "string", "enum": ["PROPRIETAIRE", "GESTIONNAIRE", "GERANT"], "description": "Profil de l'opérateur." },
+        "totalAmount": { "type": "integer", "description": "Montant total payé en FCFA." },
+        "totalUnits": { "type": "integer", "description": "Nombre total d'unités vendues." },
+        "itemCount": { "type": "integer", "description": "Nombre de lignes de produits." },
+        "itemsSummary": { "type": "string", "description": "Résumé lisible des produits vendus." },
+        "lines": { "type": "array", "description": "Lignes détaillées de la vente (<= 50)." },
+        "saleDateMs": { "type": "integer", "description": "Date de vente en millisecondes." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Horodatage serveur (FieldValue.serverTimestamp())." }
+      },
+      "required": ["storeId", "ownerUid", "memberUids", "operatorId", "operatorName", "operatorRole", "totalAmount", "totalUnits", "itemCount", "itemsSummary", "lines", "saleDateMs", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/stores/{storeId}": {
+      "schema": { "$ref": "#/entities/Store" },
+      "description": "Espace boutique MBG STOCK et paramètres généraux."
+    },
+    "/stores/{storeId}/staff/{staffId}": {
+      "schema": { "$ref": "#/entities/StaffAccount" },
+      "description": "Profils utilisateurs internes du magasin."
+    },
+    "/stores/{storeId}/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Catalogue et quantités en stock des produits."
+    },
+    "/stores/{storeId}/movements/{movementId}": {
+      "schema": { "$ref": "#/entities/StockMovement" },
+      "description": "Historique immuable des mouvements de stock."
+    },
+    "/stores/{storeId}/sales/{saleId}": {
+      "schema": { "$ref": "#/entities/SaleRecord" },
+      "description": "Historique immuable des ventes multi-produits."
+    }
+  }
+}
